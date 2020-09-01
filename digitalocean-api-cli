@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+import argparse
+import inspect
+import json
+import sys
+import os
+# import gitlab
+import requests
+import traceback
+
+class DigitalOceanApi():
+    def __init__(self, host_url, api_key="", **kwargs):
+        
+        self._host_url = host_url
+        self._api_key = api_key
+
+
+    def request(self, method, url, **kwargs):
+        request_parameters = {}
+        request_parameters['url'] = self._host_url + url.replace('//', '/')
+        request_parameters['url'] = request_parameters['url'].format(**kwargs)
+        
+        request_parameters['headers'] = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+            'Authorization' : 'Bearer ' + self._api_key
+        }
+        request_parameters['data']=kwargs.get('data', None)
+        request_parameters['json']=kwargs.get('json', None)
+        request_parameters['timeout']=kwargs.get('timeout', 30.0)
+
+        return requests.request(
+            method=method,
+            **request_parameters
+        )
+
+class DigitalOceanApiCtl():
+    
+    def call(self, **kwargs):
+        cli = DigitalOceanApi(kwargs.get('base_url'),kwargs.get('private_token'))
+        try:
+            parsed = json_res = cli.request(**kwargs).json()
+        except:
+            parsed = {}
+        return json.dumps(parsed, indent=2) 
+
+    def parse(self):
+        self._parser = parser = argparse.ArgumentParser(description='gitlab api ctl')
+        parser.add_argument(
+            "--base-url",
+            default=os.environ.get('DO_API_BASE_URL', "https://api.digitalocean.com/v2"),
+            help="digitalocean api url",
+            dest="base_url")
+
+        parser.add_argument(
+            "--private-token",
+            default=os.environ.get('DO_TOKEN', None),
+            help="digitalocean api token",
+            dest="private_token")
+        parser.set_defaults(current_parser='_parser')
+        parser.set_defaults(method='GET')
+        parser.add_argument(
+            '-X', '--method', help='GET,POST,PATCH,PUT,DELETE', dest='method')
+        parser.add_argument('-d', '--data', help='data')
+        parser.add_argument('url', help='url, example /toto/tata')
+        
+        args = parser.parse_args()
+        args_for_func = vars(args)
+        result = self.call(**args_for_func)
+        
+        # print(json.dumps(result, indent=2))
+        print(result)
+
+
+def main():
+    ctl = DigitalOceanApiCtl()
+    ctl.parse()
+
+if __name__ == '__main__':
+    main()
