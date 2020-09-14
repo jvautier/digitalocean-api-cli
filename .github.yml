@@ -1,4 +1,5 @@
 ---
+# See https://github.com/jvautier/project-cli
 fullname: jvautier/digitalocean-api-cli
 description: DigitalOcean tiny api client
 tags:
