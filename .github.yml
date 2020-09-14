@@ -1,0 +1,9 @@
+---
+fullname: jvautier/digitalocean-api-cli
+description: DigitalOcean tiny api client
+tags:
+  - python
+  - cli
+  - digitalocean
+  - api
+github: {}
